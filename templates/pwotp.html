@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <form action="/pwotp" method="post">
+            <h2>Password Reset</h2>
+            <p>We have sent OTP to your email. Please enter it below:</p>
+            <input type="text" name="otp" placeholder="Enter OTP" required>
+            {% if error %}
+                <p style="color: red;">{{ error }}</p>
+            {% endif %}
+            {% if message %}
+                <p style="color: green;">{{ message }}</p>
+            {% endif %}
+            <button type="submit">Verify</button>
+            <p>Didn't receive the code? 
+                <form action="/pwresend" method="POST" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer;">Resend OTP</button>
+                </form>
+            </p>
+        </form>
+    </div>
+</body>
+</html>
