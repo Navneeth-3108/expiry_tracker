@@ -7,6 +7,7 @@ import bcrypt
 import schedule
 import time
 import pytz
+from twilio.rest import Client
 from threading import Thread
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -22,6 +23,12 @@ app.secret_key = os.urandom(24)
 
 # Load environment variables from .env file
 load_dotenv()
+
+# SMS Configuration
+account_sid = os.getenv('account_sid')
+auth_token = os.getenv('auth_token')
+twilio_client = Client(account_sid, auth_token)
+twilio_number = os.getenv('twilio_number')
 
 # Email Configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
@@ -254,29 +261,42 @@ def disable_notification():
 # ============================================================================
 
 def schedule_notifications():
-    today = datetime.now(pytz.utc).date()
-    two_weeks_from_now = today + datetime.timedelta(days=14)
-    users = dbproducts.list_collection_names()
-    for user_phone in users:
-        productscollection = dbproducts[user_phone]
-        products = productscollection.find({"notification": "on"})
-        user_details = usercollection.find_one({"Phone": int(user_phone)})
-        if not user_details:
-            continue
-        expiring_products = []
-        for product in products:
-            expiry_date = product.get('expiry_date')
-            if expiry_date:
-                expiry_date_obj = datetime.datetime.strptime(expiry_date, '%Y-%m-%d').date()
-                if today <= expiry_date_obj <= two_weeks_from_now:
-                    expiring_products.append(product)
-        if expiring_products:
-            #yet to be done
-            pass
-            
-
+    with app.app_context():
+        today = datetime.now(pytz.utc).date()
+        two_weeks_from_now = today + timedelta(days=14)
+        users = dbproducts.list_collection_names()
+        for user_phone in users:
+            productscollection = dbproducts[user_phone]
+            products = productscollection.find({"notification": "on"})
+            user_details = usercollection.find_one({"Phone": int(user_phone)})
+            if not user_details:
+                continue
+            expiring_products = []
+            for product in products:
+                expiry_date = product.get('expiry_date')
+                if expiry_date:
+                    expiry_date_obj = datetime.strptime(expiry_date, '%Y-%m-%d').date()
+                    if today <= expiry_date_obj <= two_weeks_from_now:
+                        expiring_products.append(product)
+            if expiring_products:
+                for product in expiring_products:
+                    # Flask Mail for email notification
+                    msg = Message(
+                        subject="Product Expiration Reminder",
+                        sender=app.config['MAIL_USERNAME'],
+                        recipients=[user_details['Email']],
+                        body=f"\n\nYour product '{product['product_name']}' is expiring on {product['expiry_date']}.\n\nPlease take the necessary action.\n\n"
+                    )
+                    mail.send(msg)
+                    # Twilio for SMS notification
+                    message = twilio_client.messages.create(
+                        body=f"Your product '{product['product_name']}' is expiring on {product['expiry_date']}. Please take the necessary action.",
+                        from_=twilio_number,
+                        to=f"+91{user_details['Phone']}"
+                    )
+                    
 def run_scheduler():
-    schedule.every().day.at("09:00").do(schedule_notifications)
+    schedule.every().day.at(os.getenv("SCHEDULE_TIME", "09:00")).do(schedule_notifications)
 
     while True:
         schedule.run_pending()
@@ -287,7 +307,8 @@ def run_scheduler():
 # ============================================================================
 
 if __name__ == '__main__':
-    scheduler_thread = Thread(target=run_scheduler)
-    scheduler_thread.daemon = True
-    scheduler_thread.start()
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        scheduler_thread = Thread(target=run_scheduler)
+        scheduler_thread.daemon = True
+        scheduler_thread.start()
     app.run(debug=True)
