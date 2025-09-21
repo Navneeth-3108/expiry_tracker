@@ -1,6 +1,3 @@
-/* Ultra-Modern Expiry Tracker CSS - Beautiful & Responsive */
-
-/* CSS Reset & Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -22,9 +19,9 @@ html {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-    background-size: 200% 200%;
-    animation: gradientShift 8s ease infinite;
+    background: linear-gradient(135deg, #2C3E50 0%, #34495E 25%, #4A6741 50%, #5D4E75 75%, #2C3E50 100%);
+    background-size: 300% 300%;
+    animation: gradientShift 12s ease infinite;
     min-height: 100vh;
     min-height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
@@ -61,9 +58,10 @@ body::before {
     width: 100%;
     height: 100%;
     background-image: 
-        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgba(76, 217, 100, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 60% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
 }
@@ -154,7 +152,7 @@ h1::after {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+    background: linear-gradient(90deg, #4CD964, #3498DB, #E74C3C);
     border-radius: 2px;
     animation: shimmer 2s ease-in-out infinite;
 }
@@ -188,7 +186,7 @@ h2::after {
     transform: translateX(-50%);
     width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #3498DB, #2980B9);
     border-radius: 1px;
 }
 
@@ -296,7 +294,7 @@ button {
     width: 100%;
     min-height: 54px; /* Larger touch target size */
     padding: 16px 22px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+    background: linear-gradient(135deg, #3498DB 0%, #2980B9 50%, #3498DB 100%);
     background-size: 200% 200%;
     color: white;
     border: none;
@@ -311,7 +309,7 @@ button {
     position: relative;
     overflow: hidden;
     box-shadow: 
-        0 6px 20px rgba(102, 126, 234, 0.3),
+        0 6px 20px rgba(52, 152, 219, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
     -webkit-tap-highlight-color: transparent;
@@ -370,10 +368,10 @@ button:active {
 .btn-secondary,
 button[type="submit"]:last-child,
 form:last-child button {
-    background: linear-gradient(135deg, #718096 0%, #4a5568 50%, #718096 100%);
+    background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 50%, #95A5A6 100%);
     background-size: 200% 200%;
     box-shadow: 
-        0 8px 25px rgba(113, 128, 150, 0.3),
+        0 8px 25px rgba(149, 165, 166, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     margin-bottom: 0;
 }
@@ -382,7 +380,7 @@ form:last-child button {
 button[type="submit"]:last-child:hover,
 form:last-child button:hover {
     box-shadow: 
-        0 15px 35px rgba(113, 128, 150, 0.4),
+        0 15px 35px rgba(149, 165, 166, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -451,7 +449,7 @@ form:last-child button:hover {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    background: linear-gradient(90deg, #4CD964, #3498DB, #E74C3C, #F39C12);
     border-radius: 20px 20px 0 0;
 }
 
@@ -472,7 +470,7 @@ form:last-child button:hover {
 }
 
 .product-entry h2::after {
-    background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+    background: linear-gradient(90deg, #3498DB, #2980B9);
     width: 50px;
     left: 0;
     transform: none;
@@ -962,15 +960,16 @@ p[style*="color: red"] {
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     body {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        background-size: 200% 200%;
+        background: linear-gradient(135deg, #1A1A2E 0%, #16213E 25%, #0F3460 50%, #1A1A2E 75%, #16213E 100%);
+        background-size: 300% 300%;
     }
     
     body::before {
         background-image: 
-            radial-gradient(circle at 20% 80%, rgba(29, 78, 216, 0.4) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.4) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.4) 0%, transparent 50%);
+            radial-gradient(circle at 20% 80%, rgba(76, 217, 100, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(231, 76, 60, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(52, 152, 219, 0.25) 0%, transparent 50%),
+            radial-gradient(circle at 60% 70%, rgba(155, 89, 182, 0.15) 0%, transparent 50%);
     }
     
     .container {
