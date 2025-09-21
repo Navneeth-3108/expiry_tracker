@@ -28,8 +28,9 @@ mail = Mail(app)
 
 # Database Configuration
 client = MongoClient(os.getenv('MONGO_URI'))
-db = client["AccountsDB"]
-usercollection = db["User_details"]
+dbusers = client["AccountsDB"]
+usercollection = dbusers["User_details"]
+dbproducts = client["ProductsDB"]
 
 # ============================================================================
 # MAIN ROUTES - Home and Authentication
@@ -49,7 +50,12 @@ def handle_form():
         session['phone'] = user["Phone"]
         session['name'] = user['Username']
         session['email'] = user['Email']
-        return render_template('welcome.html', name=user['Username'])
+        
+        # Collection named after user's phone number
+        productcollection = dbproducts[f"{user['Phone']}"] 
+        products = list(productcollection.find())
+        
+        return render_template('welcome.html', name=user['Username'], entries=products)
     else:
         return render_template('index.html', error="Invalid email or password",perror = True)
 
@@ -213,6 +219,30 @@ def resend_pw_otp():
         return render_template('pwotp.html', message="OTP resent successfully.")
     else:
         return render_template('forget.html', error="Session expired. Please try again.")
+
+# ============================================================================
+# Disabling and Enabling Notifications
+# ============================================================================
+
+@app.route('/enable-notification', methods=['POST'])
+def enable_notification():
+    if not session.get('phone'):
+        return render_template('index.html', error="Session Expired. Please login again.", perror = False)
+    product_name = request.form['product_name']
+    productscollection = dbproducts[f"{session['phone']}"]
+    productscollection.update_one({"product_name": product_name}, {"$set": {"notification": "on"}})
+    entries=list(productscollection.find())
+    return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
+
+@app.route('/disable-notification', methods=['POST'])
+def disable_notification():
+    if not session.get('phone'):
+        return render_template('index.html', error="Session Expired. Please login again.", perror = False)
+    product_name = request.form['product_name']
+    productscollection = dbproducts[f"{session['phone']}"]
+    productscollection.update_one({"product_name": product_name}, {"$set": {"notification": "off"}})
+    entries=list(productscollection.find())
+    return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
 
 # ============================================================================
 # APPLICATION ENTRY POINT

@@ -8,14 +8,36 @@
 </head>
 <body>
     <div class="container">
-        {% if name %}
-            <h1>Welcome, {{ name }}!</h1>
-        {% else %}
-            <h1>Welcome to the Website</h1>
+        <h1>Welcome, {{ name }}!</h1>
+        <h1>Customize your Notification settings</h1>
+        {% if entries|length == 0 %}
+            <p>No products added yet. Please add products to track their expiry dates.</p>
         {% endif %}
-        {% if error %}
-            <p style="color: red;">{{ error }}</p>
+        {% if message %}
+            <p style="color: green;">{{ message }}</p>
         {% endif %}
+
+        {% for entry in entries %}
+                <h2>{{ entry['category'] }}</h2>
+                <br>
+                {{ entry['product_name'] }}
+                <br>
+                <em>Best Before: {{ entry['expiry_date'] }}</em>
+                <br>
+                {%if entry['notification'] == 'on' %}
+                    <strong>Notifications: Enabled</strong>
+                    <form action="/disable-notification" method="POST">
+                    <input type="hidden" name="product_name" value="{{ entry['product_name'] }}">
+                    <button type="submit">Disable Notifications</button>
+                    </form>
+                {% else %}
+                    <strong>Notifications: Disabled</strong>
+                    <form action="/enable-notification" method="POST">
+                    <input type="hidden" name="product_name" value="{{ entry['product_name'] }}">
+                    <button type="submit">Enable Notifications</button>
+                    </form>
+                {% endif %}
+        {% endfor %}
         
         <form action="/logout" method="POST">
             <button type="submit">Logout</button>
