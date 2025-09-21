@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Email Verification</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
@@ -20,8 +20,8 @@
             {% endif %}
             <button type="submit">Verify</button>
             <p>Didn't receive the code? 
-                <form action="/resend" method="POST" style="display: inline;">
-                    <button type="submit" style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer;">Resend OTP</button>
+                <form action="/resend" method="POST" style="display: inline; margin: 0;">
+                    <button type="submit" class="btn-link">Resend OTP</button>
                 </form>
             </p>
         </form>
