@@ -4,6 +4,11 @@
 import os
 import random
 import bcrypt
+import schedule
+import time
+import pytz
+from threading import Thread
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
 from pymongo import MongoClient
@@ -20,8 +25,8 @@ load_dotenv()
 
 # Email Configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+app.config['MAIL_USE_TLS'] = bool(os.getenv('MAIL_USE_TLS'))
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
@@ -245,8 +250,44 @@ def disable_notification():
     return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
 
 # ============================================================================
+# Scheduler
+# ============================================================================
+
+def schedule_notifications():
+    today = datetime.now(pytz.utc).date()
+    two_weeks_from_now = today + datetime.timedelta(days=14)
+    users = dbproducts.list_collection_names()
+    for user_phone in users:
+        productscollection = dbproducts[user_phone]
+        products = productscollection.find({"notification": "on"})
+        user_details = usercollection.find_one({"Phone": int(user_phone)})
+        if not user_details:
+            continue
+        expiring_products = []
+        for product in products:
+            expiry_date = product.get('expiry_date')
+            if expiry_date:
+                expiry_date_obj = datetime.datetime.strptime(expiry_date, '%Y-%m-%d').date()
+                if today <= expiry_date_obj <= two_weeks_from_now:
+                    expiring_products.append(product)
+        if expiring_products:
+            #yet to be done
+            pass
+            
+
+def run_scheduler():
+    schedule.every().day.at("09:00").do(schedule_notifications)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+# ============================================================================
 # APPLICATION ENTRY POINT
 # ============================================================================
 
 if __name__ == '__main__':
+    scheduler_thread = Thread(target=run_scheduler)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
     app.run(debug=True)
