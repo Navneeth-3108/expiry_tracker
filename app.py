@@ -4,6 +4,7 @@
 import os
 import random
 import bcrypt
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
 from pymongo import MongoClient
 from flask_mail import Mail, Message
@@ -14,17 +15,20 @@ from flask_mail import Mail, Message
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+# Load environment variables from .env file
+load_dotenv()
+
 # Email Configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your_email@gmail.com'
-app.config['MAIL_PASSWORD'] = 'your_email_password'
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS')
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 
 # Database Configuration
-client = MongoClient("mongodb://localhost:27017/")
-db = client["Banking"]
+client = MongoClient(os.getenv('MONGO_URI'))
+db = client["AccountsDB"]
 usercollection = db["User_details"]
 
 # ============================================================================
@@ -153,7 +157,7 @@ def check_user():
         otp = random.randint(100000, 999999)
         session['otp'] = otp
         msg = Message(
-            subject="Password Reset for Banking App",
+            subject="Password Reset for Expiry Tracker",
             sender=app.config['MAIL_USERNAME'],
             recipients=[email],
             body=f"Hi {username},\n\nYour OTP for Password Reset is: {otp}\n\nPlease use this OTP to change your password.\n\n"
