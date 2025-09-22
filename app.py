@@ -294,6 +294,12 @@ def schedule_notifications():
                         from_=twilio_number,
                         to=f"+91{user_details['Phone']}"
                     )
+                    # Twilio for WhatsApp notification
+                    message = twilio_client.messages.create(
+                        body=f"Your product '{product['product_name']}' is expiring on {product['expiry_date']}. Please take the necessary action.",
+                        from_={os.getenv('twilio_whatsapp_number')},
+                        to=f"whatsapp:+91{user_details['Phone']}"
+                    )
                     
 def run_scheduler():
     schedule.every().day.at(os.getenv("SCHEDULE_TIME", "09:00")).do(schedule_notifications)
