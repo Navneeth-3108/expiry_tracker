@@ -327,5 +327,5 @@ if __name__ == '__main__':
         scheduler_thread.start()
     app.run(debug=True)
 
-# For Vercel deployment - expose the Flask app directly
-# Vercel will automatically detect this as the WSGI application
+# Vercel entry point - this is what Vercel will call
+app.config['DEBUG'] = False
