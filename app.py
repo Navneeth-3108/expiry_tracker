@@ -253,53 +253,6 @@ def disable_notification():
     entries=list(productscollection.find())
     return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
 
-# ============================================================================
-# Scheduler
-# ============================================================================
-
-def schedule_notifications():
-    with app.app_context():
-        today = datetime.now(pytz.utc).date()
-        two_weeks_from_now = today + timedelta(days=14)
-        users = dbproducts.list_collection_names()
-        for user_phone in users:
-            productscollection = dbproducts[user_phone]
-            products = productscollection.find({"notification": "on"})
-            user_details = usercollection.find_one({"Phone": int(user_phone)})
-            if not user_details:
-                continue
-            expiring_products = []
-            for product in products:
-                expiry_date = product.get('expiry_date')
-                if expiry_date:
-                    expiry_date_obj = datetime.strptime(expiry_date, '%Y-%m-%d').date()
-                    if today <= expiry_date_obj <= two_weeks_from_now:
-                        expiring_products.append(product)
-            if expiring_products:
-                for product in expiring_products:
-                    # Flask Mail for email notification
-                    msg = Message(
-                        subject="Product Expiration Reminder",
-                        sender=app.config['MAIL_USERNAME'],
-                        recipients=[user_details['Email']],
-                        body=f"\n\nYour product '{product['product_name']}' is expiring on {product['expiry_date']}.\n\nPlease take the necessary action.\n\n"
-                    )
-                    mail.send(msg)
-                    # Twilio for SMS notification
-                    message = twilio_client.messages.create(
-                        body=f"Your product '{product['product_name']}' is expiring on {product['expiry_date']}. Please take the necessary action.",
-                        from_=twilio_number,
-                        to=f"+91{user_details['Phone']}"
-                    )
-                    # Twilio for WhatsApp notification
-                    
-                    
-
-# Expose notification logic as an HTTP endpoint for Vercel
-@app.route('/notify', methods=['POST', 'GET'])
-def trigger_notifications():
-    schedule_notifications()
-    return 'Notifications triggered', 200
 
 # ============================================================================
 # APPLICATION ENTRY POINT
