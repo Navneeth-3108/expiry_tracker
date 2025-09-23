@@ -62,13 +62,29 @@ else:
 def health_check():
     return {"status": "ok", "message": "Flask app is running"}
 
+@app.route('/debug')
+def debug_info():
+    import sys
+    return {
+        "python_version": sys.version,
+        "flask_working": True,
+        "templates_folder": app.template_folder,
+        "static_folder": app.static_folder,
+        "has_mongo_uri": bool(os.getenv('MONGO_URI')),
+        "has_mail_user": bool(os.getenv('MAIL_USERNAME')),
+        "has_twilio": bool(os.getenv('account_sid'))
+    }
+
 # ============================================================================
 # MAIN ROUTES - Home and Authentication
 # ============================================================================
 
 @app.route('/')
 def show_form():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        return f"Template error: {str(e)}"
 
 @app.route('/login', methods=['GET','POST'])
 def handle_form():
