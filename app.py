@@ -18,12 +18,7 @@ from flask_mail import Mail, Message
 # ============================================================================
 # APP CONFIGURATION
 # ============================================================================
-# Configure Flask to find templates and static files in parent directory
-import os
-template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
-static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
-
-app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 # Load environment variables from .env file
@@ -32,53 +27,22 @@ load_dotenv()
 # SMS Configuration
 account_sid = os.getenv('account_sid')
 auth_token = os.getenv('auth_token')
-if account_sid and auth_token:
-    twilio_client = Client(account_sid, auth_token)
-else:
-    twilio_client = None
+twilio_client = Client(account_sid, auth_token)
 twilio_number = os.getenv('twilio_number')
 
 # Email Configuration
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
-app.config['MAIL_USE_TLS'] = bool(os.getenv('MAIL_USE_TLS', 'True'))
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+app.config['MAIL_USE_TLS'] = bool(os.getenv('MAIL_USE_TLS'))
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 
 # Database Configuration
-mongo_uri = os.getenv('MONGO_URI')
-if mongo_uri:
-    client = MongoClient(mongo_uri)
-    dbusers = client["AccountsDB"]
-    usercollection = dbusers["User_details"]
-    dbproducts = client["ProductsDB"]
-else:
-    client = None
-    dbusers = None
-    usercollection = None
-    dbproducts = None
-
-# ============================================================================
-# HEALTH CHECK - For debugging Vercel deployment
-# ============================================================================
-
-@app.route('/health')
-def health_check():
-    return {"status": "ok", "message": "Flask app is running"}
-
-@app.route('/debug')
-def debug_info():
-    import sys
-    return {
-        "python_version": sys.version,
-        "flask_working": True,
-        "templates_folder": app.template_folder,
-        "static_folder": app.static_folder,
-        "has_mongo_uri": bool(os.getenv('MONGO_URI')),
-        "has_mail_user": bool(os.getenv('MAIL_USERNAME')),
-        "has_twilio": bool(os.getenv('account_sid'))
-    }
+client = MongoClient(os.getenv('MONGO_URI'))
+dbusers = client["AccountsDB"]
+usercollection = dbusers["User_details"]
+dbproducts = client["ProductsDB"]
 
 # ============================================================================
 # MAIN ROUTES - Home and Authentication
@@ -86,38 +50,26 @@ def debug_info():
 
 @app.route('/')
 def show_form():
-    try:
-        return render_template('index.html')
-    except Exception as e:
-        return f"Template error: {str(e)}"
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
 def handle_form():
-    try:
-        if not usercollection:
-            return render_template('index.html', error="Database not available", perror=True)
+    email = request.form['email']
+    password = request.form['password'].encode('utf-8')
+    user = usercollection.find_one({"Email": email})
+    
+    if user and bcrypt.checkpw(password, user["Password"]):
+        session['phone'] = user["Phone"]
+        session['name'] = user['Username']
+        session['email'] = user['Email']
         
-        if request.method == 'GET':
-            return render_template('index.html')
+        # Collection named after user's phone number
+        productcollection = dbproducts[f"{user['Phone']}"] 
+        products = list(productcollection.find())
         
-        email = request.form['email']
-        password = request.form['password'].encode('utf-8')
-        user = usercollection.find_one({"Email": email})
-        
-        if user and bcrypt.checkpw(password, user["Password"]):
-            session['phone'] = user["Phone"]
-            session['name'] = user['Username']
-            session['email'] = user['Email']
-            
-            # Collection named after user's phone number
-            productcollection = dbproducts[f"{user['Phone']}"] 
-            products = list(productcollection.find())
-            
-            return render_template('welcome.html', name=user['Username'], entries=products)
-        else:
-            return render_template('index.html', error="Invalid email or password",perror = True)
-    except Exception as e:
-        return f"Login error: {str(e)}"
+        return render_template('welcome.html', name=user['Username'], entries=products)
+    else:
+        return render_template('index.html', error="Invalid email or password",perror = True)
 
 @app.route('/login-page', methods=['POST'])
 def home():
@@ -138,45 +90,36 @@ def signup():
 
 @app.route('/create', methods=['GET','POST'])
 def create_user():
-    try:
-        if not usercollection:
-            return render_template('create.html', error="Database not available")
-        
-        username = request.form['username']
-        email = request.form['email']
-        phone = request.form['phone']
-        password = request.form['password'].encode('utf-8')
-        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-        
-        if not phone.isdigit() or len(phone) != 10:
-            return render_template('create.html', error="Please enter a valid 10-digit phone number")
-        if usercollection.find_one({"Email": email}):
-            return render_template('create.html', error="Email already exists")
-        elif usercollection.find_one({"Phone": int(phone)}):
-            return render_template('create.html', error="Phone number already exists")
-        elif usercollection.find_one({"Username": username}):
-            return render_template('create.html', error="Username already exists")
-        
-        otp = random.randint(100000, 999999)
-        session['otp'] = otp
-        session['email'] = email
-        session['username'] = username
-        session['phone'] = phone
-        session['password'] = hashed_password
-        
-        if mail and app.config['MAIL_USERNAME']:
-            msg = Message(
-                subject="Email Verification",
-                sender=app.config['MAIL_USERNAME'],
-                recipients=[email],
-                body=f"Hi {username},\n\nThank you for signing up! Your OTP for email verification is: {otp}\n\nPlease use this OTP to complete your registration.\n\n"
-            )
-            mail.send(msg)
-            return render_template('otp.html')
-        else:
-            return render_template('create.html', error="Email service not available")
-    except Exception as e:
-        return f"Registration error: {str(e)}"
+    username = request.form['username']
+    email = request.form['email']
+    phone = request.form['phone']
+    password = request.form['password'].encode('utf-8')
+    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+    
+    if not phone.isdigit() or len(phone) != 10:
+        return render_template('create.html', error="Please enter a valid 10-digit phone number")
+    if usercollection.find_one({"Email": email}):
+        return render_template('create.html', error="Email already exists")
+    elif usercollection.find_one({"Phone": int(phone)}):
+        return render_template('create.html', error="Phone number already exists")
+    elif usercollection.find_one({"Username": username}):
+        return render_template('create.html', error="Username already exists")
+    
+    otp = random.randint(100000, 999999)
+    session['otp'] = otp
+    session['email'] = email
+    session['username'] = username
+    session['phone'] = phone
+    session['password'] = hashed_password
+    
+    msg = Message(
+        subject="Email Verification",
+        sender=app.config['MAIL_USERNAME'],
+        recipients=[session['email']],
+        body=f"Hi {username},\n\nThank you for signing up! Your OTP for email verification is: {otp}\n\nPlease use this OTP to complete your registration.\n\n"
+    )
+    mail.send(msg)
+    return render_template('otp.html')
 
 @app.route('/otp', methods=['POST'])
 def verify_signup_otp():
@@ -375,6 +318,3 @@ if __name__ == '__main__':
         scheduler_thread.daemon = True
         scheduler_thread.start()
     app.run(debug=True)
-
-# Vercel entry point - this is what Vercel will call
-app.config['DEBUG'] = False
