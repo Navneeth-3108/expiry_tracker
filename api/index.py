@@ -27,22 +27,32 @@ load_dotenv()
 # SMS Configuration
 account_sid = os.getenv('account_sid')
 auth_token = os.getenv('auth_token')
-twilio_client = Client(account_sid, auth_token)
+if account_sid and auth_token:
+    twilio_client = Client(account_sid, auth_token)
+else:
+    twilio_client = None
 twilio_number = os.getenv('twilio_number')
 
 # Email Configuration
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
-app.config['MAIL_USE_TLS'] = bool(os.getenv('MAIL_USE_TLS'))
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
+app.config['MAIL_USE_TLS'] = bool(os.getenv('MAIL_USE_TLS', 'True'))
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
 mail = Mail(app)
 
 # Database Configuration
-client = MongoClient(os.getenv('MONGO_URI'))
-dbusers = client["AccountsDB"]
-usercollection = dbusers["User_details"]
-dbproducts = client["ProductsDB"]
+mongo_uri = os.getenv('MONGO_URI')
+if mongo_uri:
+    client = MongoClient(mongo_uri)
+    dbusers = client["AccountsDB"]
+    usercollection = dbusers["User_details"]
+    dbproducts = client["ProductsDB"]
+else:
+    client = None
+    dbusers = None
+    usercollection = None
+    dbproducts = None
 
 # ============================================================================
 # HEALTH CHECK - For debugging Vercel deployment
@@ -62,6 +72,9 @@ def show_form():
 
 @app.route('/login', methods=['GET','POST'])
 def handle_form():
+    if not usercollection:
+        return render_template('index.html', error="Database not available", perror=True)
+    
     email = request.form['email']
     password = request.form['password'].encode('utf-8')
     user = usercollection.find_one({"Email": email})
