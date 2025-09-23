@@ -318,3 +318,7 @@ if __name__ == '__main__':
         scheduler_thread.daemon = True
         scheduler_thread.start()
     app.run(debug=True)
+
+# Vercel compatibility - expose app object
+# This allows Vercel to find and use the Flask application
+handler = app
