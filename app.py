@@ -292,11 +292,7 @@ def schedule_notifications():
                         to=f"+91{user_details['Phone']}"
                     )
                     # Twilio for WhatsApp notification
-                    message = twilio_client.messages.create(
-                        body=f"Your product '{product['product_name']}' is expiring on {product['expiry_date']}. Please take the necessary action.",
-                        from_=os.getenv('twilio_whatsapp_number'),
-                        to=f"whatsapp:+91{user_details['Phone']}"
-                    )
+                    
                     
 
 # Expose notification logic as an HTTP endpoint for Vercel
