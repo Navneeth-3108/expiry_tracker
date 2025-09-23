@@ -45,6 +45,14 @@ usercollection = dbusers["User_details"]
 dbproducts = client["ProductsDB"]
 
 # ============================================================================
+# HEALTH CHECK - For debugging Vercel deployment
+# ============================================================================
+
+@app.route('/health')
+def health_check():
+    return {"status": "ok", "message": "Flask app is running"}
+
+# ============================================================================
 # MAIN ROUTES - Home and Authentication
 # ============================================================================
 
@@ -319,6 +327,5 @@ if __name__ == '__main__':
         scheduler_thread.start()
     app.run(debug=True)
 
-# Vercel compatibility - expose app object
-# This allows Vercel to find and use the Flask application
-handler = app
+# For Vercel deployment - expose the Flask app directly
+# Vercel will automatically detect this as the WSGI application
