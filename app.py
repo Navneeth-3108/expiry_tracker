@@ -4,11 +4,8 @@
 import os
 import random
 import bcrypt
-import schedule
-import time
 import pytz
 from twilio.rest import Client
-from threading import Thread
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
@@ -297,7 +294,7 @@ def schedule_notifications():
                     # Twilio for WhatsApp notification
                     message = twilio_client.messages.create(
                         body=f"Your product '{product['product_name']}' is expiring on {product['expiry_date']}. Please take the necessary action.",
-                        from_={os.getenv('twilio_whatsapp_number')},
+                        from_=os.getenv('twilio_whatsapp_number'),
                         to=f"whatsapp:+91{user_details['Phone']}"
                     )
                     
