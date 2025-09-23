@@ -88,25 +88,31 @@ def show_form():
 
 @app.route('/login', methods=['GET','POST'])
 def handle_form():
-    if not usercollection:
-        return render_template('index.html', error="Database not available", perror=True)
-    
-    email = request.form['email']
-    password = request.form['password'].encode('utf-8')
-    user = usercollection.find_one({"Email": email})
-    
-    if user and bcrypt.checkpw(password, user["Password"]):
-        session['phone'] = user["Phone"]
-        session['name'] = user['Username']
-        session['email'] = user['Email']
+    try:
+        if not usercollection:
+            return render_template('index.html', error="Database not available", perror=True)
         
-        # Collection named after user's phone number
-        productcollection = dbproducts[f"{user['Phone']}"] 
-        products = list(productcollection.find())
+        if request.method == 'GET':
+            return render_template('index.html')
         
-        return render_template('welcome.html', name=user['Username'], entries=products)
-    else:
-        return render_template('index.html', error="Invalid email or password",perror = True)
+        email = request.form['email']
+        password = request.form['password'].encode('utf-8')
+        user = usercollection.find_one({"Email": email})
+        
+        if user and bcrypt.checkpw(password, user["Password"]):
+            session['phone'] = user["Phone"]
+            session['name'] = user['Username']
+            session['email'] = user['Email']
+            
+            # Collection named after user's phone number
+            productcollection = dbproducts[f"{user['Phone']}"] 
+            products = list(productcollection.find())
+            
+            return render_template('welcome.html', name=user['Username'], entries=products)
+        else:
+            return render_template('index.html', error="Invalid email or password",perror = True)
+    except Exception as e:
+        return f"Login error: {str(e)}"
 
 @app.route('/login-page', methods=['POST'])
 def home():
@@ -127,36 +133,45 @@ def signup():
 
 @app.route('/create', methods=['GET','POST'])
 def create_user():
-    username = request.form['username']
-    email = request.form['email']
-    phone = request.form['phone']
-    password = request.form['password'].encode('utf-8')
-    hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-    
-    if not phone.isdigit() or len(phone) != 10:
-        return render_template('create.html', error="Please enter a valid 10-digit phone number")
-    if usercollection.find_one({"Email": email}):
-        return render_template('create.html', error="Email already exists")
-    elif usercollection.find_one({"Phone": int(phone)}):
-        return render_template('create.html', error="Phone number already exists")
-    elif usercollection.find_one({"Username": username}):
-        return render_template('create.html', error="Username already exists")
-    
-    otp = random.randint(100000, 999999)
-    session['otp'] = otp
-    session['email'] = email
-    session['username'] = username
-    session['phone'] = phone
-    session['password'] = hashed_password
-    
-    msg = Message(
-        subject="Email Verification",
-        sender=app.config['MAIL_USERNAME'],
-        recipients=[session['email']],
-        body=f"Hi {username},\n\nThank you for signing up! Your OTP for email verification is: {otp}\n\nPlease use this OTP to complete your registration.\n\n"
-    )
-    mail.send(msg)
-    return render_template('otp.html')
+    try:
+        if not usercollection:
+            return render_template('create.html', error="Database not available")
+        
+        username = request.form['username']
+        email = request.form['email']
+        phone = request.form['phone']
+        password = request.form['password'].encode('utf-8')
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+        
+        if not phone.isdigit() or len(phone) != 10:
+            return render_template('create.html', error="Please enter a valid 10-digit phone number")
+        if usercollection.find_one({"Email": email}):
+            return render_template('create.html', error="Email already exists")
+        elif usercollection.find_one({"Phone": int(phone)}):
+            return render_template('create.html', error="Phone number already exists")
+        elif usercollection.find_one({"Username": username}):
+            return render_template('create.html', error="Username already exists")
+        
+        otp = random.randint(100000, 999999)
+        session['otp'] = otp
+        session['email'] = email
+        session['username'] = username
+        session['phone'] = phone
+        session['password'] = hashed_password
+        
+        if mail and app.config['MAIL_USERNAME']:
+            msg = Message(
+                subject="Email Verification",
+                sender=app.config['MAIL_USERNAME'],
+                recipients=[email],
+                body=f"Hi {username},\n\nThank you for signing up! Your OTP for email verification is: {otp}\n\nPlease use this OTP to complete your registration.\n\n"
+            )
+            mail.send(msg)
+            return render_template('otp.html')
+        else:
+            return render_template('create.html', error="Email service not available")
+    except Exception as e:
+        return f"Registration error: {str(e)}"
 
 @app.route('/otp', methods=['POST'])
 def verify_signup_otp():
