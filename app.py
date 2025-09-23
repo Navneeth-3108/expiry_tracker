@@ -301,20 +301,16 @@ def schedule_notifications():
                         to=f"whatsapp:+91{user_details['Phone']}"
                     )
                     
-def run_scheduler():
-    schedule.every().day.at(os.getenv("SCHEDULE_TIME", "09:00")).do(schedule_notifications)
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+# Expose notification logic as an HTTP endpoint for Vercel
+@app.route('/notify', methods=['POST', 'GET'])
+def trigger_notifications():
+    schedule_notifications()
+    return 'Notifications triggered', 200
 
 # ============================================================================
 # APPLICATION ENTRY POINT
 # ============================================================================
 
 if __name__ == '__main__':
-    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-        scheduler_thread = Thread(target=run_scheduler)
-        scheduler_thread.daemon = True
-        scheduler_thread.start()
     app.run(debug=True)
