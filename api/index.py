@@ -18,7 +18,12 @@ from flask_mail import Mail, Message
 # ============================================================================
 # APP CONFIGURATION
 # ============================================================================
-app = Flask(__name__)
+# Configure Flask to find templates and static files in parent directory
+import os
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
+static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.secret_key = os.urandom(24)
 
 # Load environment variables from .env file
