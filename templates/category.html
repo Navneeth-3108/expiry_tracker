@@ -24,7 +24,7 @@
             <p style="color: green;">{{ message }}</p>
         {% endif %}
 
-        {% set medicine = 0 %}
+        {% set Medicine = 0 %}
         {% set food = 0 %}
         {% set cosmetics = 0 %}
         {% set others = 0 %}
@@ -43,7 +43,7 @@
             {% endif %}
         {% endfor %}
 
-        {%if medicine==1%}
+        {%if Medicine==1%}
             <form action="/medicine" method="POST">
                 <button type="submit" class="btn-primary">Medicine</button>
             </form>
