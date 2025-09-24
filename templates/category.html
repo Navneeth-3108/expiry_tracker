@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Category</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container welcome-container">
+        <div class="welcome-header">
+            <h1>Expirex</h1>
+            <h1>Welcome, {{ name }}!</h1>
+            <h2>Customize your Notification settings</h2>
+        </div>
+        
+        {% if entries|length == 0 %}
+            <div class="no-products">
+                <p>No products added yet. Please add products to track their expiry dates.</p>
+            </div>
+        {% endif %}
+        
+        {% if message %}
+            <p style="color: green;">{{ message }}</p>
+        {% endif %}
+
+        {% set medicine = 0 %}
+        {% set food = 0 %}
+        {% set cosmetics = 0 %}
+        {% set others = 0 %}
+        {% for entry in entries %}
+            {% if entry['category'] == "Medicine" %}
+                {% set medicine = 1 %}
+            {% endif %}
+            {% if entry['category'] == "Food" %}
+                {% set food = 1 %}
+            {% endif %}
+            {% if entry['category'] == "Cosmetics" %}
+                {% set cosmetics = 1 %}
+            {% endif %}
+            {% if entry['category'] == "Others" %}
+                {% set others = 1 %}
+            {% endif %}
+        {% endfor %}
+
+        {%if medicine==1%}
+            <form action="/medicine" method="POST">
+                <button type="submit" class="btn-primary">Medicine</button>
+            </form>
+        {%endif%}
+        {%if food==1%}
+            <form action="/food" method="POST">
+                <button type="submit" class="btn-primary">Food</button>
+            </form>
+        {%endif%}
+        {%if cosmetics==1%}
+            <form action="/cosmetics" method="POST">
+                <button type="submit" class="btn-primary">Cosmetics</button>
+            </form>
+        {%endif%}
+        {%if others==1%}
+            <form action="/others" method="POST">
+                <button type="submit" class="btn-primary">Others</button>
+            </form>
+        {%endif%}
+
+        <div class="logout-section">
+            <form action="/logout" method="POST">
+                <button type="submit" class="btn-secondary">Logout</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
