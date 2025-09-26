@@ -163,6 +163,66 @@ body::before {
     }
 }
 
+/* Brand Header Styles */
+.brand-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.brand-title {
+    color: #ffffff;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 8px;
+    position: relative;
+    text-shadow: 0 3px 15px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.8px;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 0%, #e8f4fd 50%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #4CD964, #3498DB, #E74C3C, #F39C12);
+    border-radius: 2px;
+    animation: brandShimmer 3s ease-in-out infinite;
+}
+
+@keyframes brandShimmer {
+    0%, 100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateX(-50%) scale(1.1);
+    }
+}
+
+.brand-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 /* Typography */
 h1 {
     color: #ffffff;
@@ -762,6 +822,20 @@ p[style*="color: red"] {
         letter-spacing: 0.3px;
     }
     
+    .brand-header {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+    
+    .brand-title {
+        font-size: clamp(1.8rem, 7vw, 2.2rem);
+        margin-bottom: 6px;
+    }
+    
+    .brand-subtitle {
+        font-size: clamp(0.8rem, 3.5vw, 1rem);
+    }
+    
     .product-entry {
         padding: 18px;
         margin-bottom: 18px;
@@ -833,6 +907,20 @@ p[style*="color: red"] {
         border-radius: 13px;
         min-height: 55px;
         letter-spacing: 0.4px;
+    }
+    
+    .brand-header {
+        margin-bottom: 22px;
+        padding-bottom: 18px;
+    }
+    
+    .brand-title {
+        font-size: clamp(1.9rem, 6vw, 2.4rem);
+        margin-bottom: 7px;
+    }
+    
+    .brand-subtitle {
+        font-size: clamp(0.85rem, 3.2vw, 1.05rem);
     }
     
     .product-entry {
@@ -908,6 +996,20 @@ p[style*="color: red"] {
         letter-spacing: 0.5px;
     }
     
+    .brand-header {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+    }
+    
+    .brand-title {
+        font-size: clamp(2rem, 5vw, 2.5rem);
+        margin-bottom: 8px;
+    }
+    
+    .brand-subtitle {
+        font-size: clamp(0.9rem, 3vw, 1.1rem);
+    }
+    
     .product-entry {
         padding: 25px;
         margin-bottom: 25px;
@@ -979,6 +1081,20 @@ p[style*="color: red"] {
         border-radius: 15px;
         min-height: 54px;
         letter-spacing: 1px;
+    }
+    
+    .brand-header {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+    }
+    
+    .brand-title {
+        font-size: clamp(2.2rem, 4vw, 2.8rem);
+        margin-bottom: 8px;
+    }
+    
+    .brand-subtitle {
+        font-size: clamp(0.95rem, 2.5vw, 1.15rem);
     }
     
     .product-entry {
