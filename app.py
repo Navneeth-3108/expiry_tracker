@@ -64,7 +64,7 @@ def handle_form():
         productcollection = dbproducts[f"{user['Phone']}"] 
         products = list(productcollection.find())
         
-        return render_template('category.html', name=user['Username'], entries=products)
+        return render_template('welcome.html', name=user['Username'], entries=products)
     else:
         return render_template('index.html', error="Invalid email or password",perror = True)
 
@@ -230,42 +230,6 @@ def resend_pw_otp():
         return render_template('forget.html', error="Session expired. Please try again.")
 
 # ============================================================================
-# Category routes
-# ============================================================================
-
-@app.route('/medicine', methods=['POST'])
-def medicine():
-    if not session.get('phone'):
-        return render_template('index.html', error="Session Expired. Please login again.", perror=False)
-    productcollection = dbproducts[f"{session['phone']}"]
-    products = list(productcollection.find({"category": "Medicine"}))
-    return render_template('welcome.html', name=session['name'], entries=products, category="Medicine")
-
-@app.route('/food', methods=['POST'])
-def food():
-    if not session.get('phone'):
-        return render_template('index.html', error="Session Expired. Please login again.", perror=False)
-    productcollection = dbproducts[f"{session['phone']}"]
-    products = list(productcollection.find({"category": "Food"}))
-    return render_template('welcome.html', name=session['name'], entries=products, category="Food")
-
-@app.route('/cosmetics', methods=['POST'])
-def cosmetics():
-    if not session.get('phone'):
-        return render_template('index.html', error="Session Expired. Please login again.", perror=False)
-    productcollection = dbproducts[f"{session['phone']}"]
-    products = list(productcollection.find({"category": "Cosmetics"}))
-    return render_template('welcome.html', name=session['name'], entries=products, category="Cosmetics")
-
-@app.route('/others', methods=['POST'])
-def others():
-    if not session.get('phone'):
-        return render_template('index.html', error="Session Expired. Please login again.", perror=False)
-    productcollection = dbproducts[f"{session['phone']}"]
-    products = list(productcollection.find({"category": "Others"}))
-    return render_template('welcome.html', name=session['name'], entries=products, category="Others")
-
-# ============================================================================
 # Disabling and Enabling Notifications
 # ============================================================================
 
@@ -290,8 +254,8 @@ def disable_notification():
     return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
 
 
-# ============================================================================if __name__ == '__main__':
-# APPLICATION ENTRY POINT# ============================================================================# ============================================================================# APPLICATION ENTRY POINT
+# ============================================================================
+# APPLICATION ENTRY POINT
 # ============================================================================
 
 if __name__ == '__main__':
