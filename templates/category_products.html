@@ -3,41 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>Welcome</title>
+    <title>{{ category }} Products</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
     <div class="container welcome-container">
         <div class="welcome-header">
-            <h1>Welcome, {{ name }}!</h1>
+            <h1>{{ category }} Products</h1>
             <h2>Customize your Notification settings</h2>
         </div>
-        
-        {% if entries|length == 0 %}
-            <div class="no-products">
-                <p>No products added yet. Please add products to track their expiry dates.</p>
-            </div>
-        {% endif %}
         
         {% if message %}
             <p style="color: green;">{{ message }}</p>
         {% endif %}
 
-        {% for entry in entries %}
+        {% for entry in products %}
             <div class="product-entry">
-                <h2>{{ entry['category'] }}</h2>
                 <div class="product-name">{{ entry['product_name'] }}</div>
                 <div class="expiry-date">Best Before: {{ entry['expiry_date'] }}</div>
                 {%if entry['notification'] == 'on' %}
                     <div class="notification-status notification-enabled">Notifications: Enabled</div>
                     <form action="/disable-notification" method="POST">
                         <input type="hidden" name="product_name" value="{{ entry['product_name'] }}">
+                        <input type="hidden" name="category" value="{{ category }}">
                         <button type="submit">Disable Notifications</button>
                     </form>
                 {% else %}
                     <div class="notification-status notification-disabled">Notifications: Disabled</div>
                     <form action="/enable-notification" method="POST">
                         <input type="hidden" name="product_name" value="{{ entry['product_name'] }}">
+                        <input type="hidden" name="category" value="{{ category }}">
                         <button type="submit">Enable Notifications</button>
                     </form>
                 {% endif %}
@@ -45,6 +40,9 @@
         {% endfor %}
         
         <div class="logout-section">
+            <form action="/categories" method="POST">
+                <button type="submit" class="btn-secondary">Back to Categories</button>
+            </form>
             <form action="/logout" method="POST">
                 <button type="submit" class="btn-secondary">Logout</button>
             </form>

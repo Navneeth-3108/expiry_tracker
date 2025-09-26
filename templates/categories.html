@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Categories</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container welcome-container">
+        <div class="welcome-header">
+            <h1>Welcome, {{ name }}!</h1>
+            <h2>Select a Category</h2>
+        </div>
+        
+        {% if message %}
+            <p style="color: green;">{{ message }}</p>
+        {% endif %}
+        
+        {% if categories|length == 0 %}
+            <div class="no-products">
+                <p>No products added yet. Please add products to track their expiry dates.</p>
+            </div>
+        {% else %}
+            {% for category in categories %}
+                <div class="product-entry">
+                    <div class="product-name">{{ category.name }}</div>
+                    <div class="expiry-date">{{ category.count }} product(s)</div>
+                    <form action="/category/{{ category.name }}" method="POST">
+                        <button type="submit">View Products</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="logout-section">
+            <form action="/logout" method="POST">
+                <button type="submit" class="btn-secondary">Logout</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

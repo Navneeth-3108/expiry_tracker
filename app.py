@@ -60,11 +60,8 @@ def handle_form():
         session['name'] = user['Username']
         session['email'] = user['Email']
         
-        # Collection named after user's phone number
-        productcollection = dbproducts[f"{user['Phone']}"] 
-        products = list(productcollection.find())
-        
-        return render_template('welcome.html', name=user['Username'], entries=products)
+        # Redirect to categories page after successful login
+        return categories_page()
     else:
         return render_template('index.html', error="Invalid email or password",perror = True)
 
@@ -230,6 +227,42 @@ def resend_pw_otp():
         return render_template('forget.html', error="Session expired. Please try again.")
 
 # ============================================================================
+# CATEGORIES AND PRODUCTS ROUTES
+# ============================================================================
+
+@app.route('/categories', methods=['GET', 'POST'])
+def categories_page():
+    if not session.get('phone'):
+        return render_template('index.html', error="Session Expired. Please login again.", perror=False)
+    
+    productcollection = dbproducts[f"{session['phone']}"]
+    products = list(productcollection.find())
+    
+    # Group products by category and count them
+    categories_dict = {}
+    for product in products:
+        category = product.get('category', 'Uncategorized')
+        if category in categories_dict:
+            categories_dict[category] += 1
+        else:
+            categories_dict[category] = 1
+    
+    # Convert to list of objects for template
+    categories = [{'name': cat, 'count': count} for cat, count in categories_dict.items()]
+    
+    return render_template('categories.html', name=session['name'], categories=categories)
+
+@app.route('/category/<category_name>', methods=['POST'])
+def category_products(category_name):
+    if not session.get('phone'):
+        return render_template('index.html', error="Session Expired. Please login again.", perror=False)
+    
+    productcollection = dbproducts[f"{session['phone']}"]
+    products = list(productcollection.find({"category": category_name}))
+    
+    return render_template('category_products.html', category=category_name, products=products)
+
+# ============================================================================
 # Disabling and Enabling Notifications
 # ============================================================================
 
@@ -238,20 +271,30 @@ def enable_notification():
     if not session.get('phone'):
         return render_template('index.html', error="Session Expired. Please login again.", perror = False)
     product_name = request.form['product_name']
+    category = request.form.get('category')
     productscollection = dbproducts[f"{session['phone']}"]
     productscollection.update_one({"product_name": product_name}, {"$set": {"notification": "on"}})
-    entries=list(productscollection.find())
-    return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
+    
+    if category:
+        products = list(productscollection.find({"category": category}))
+        return render_template('category_products.html', category=category, products=products, message="Notification setting updated.")
+    else:
+        return categories_page()
 
 @app.route('/disable-notification', methods=['POST'])
 def disable_notification():
     if not session.get('phone'):
         return render_template('index.html', error="Session Expired. Please login again.", perror = False)
     product_name = request.form['product_name']
+    category = request.form.get('category')
     productscollection = dbproducts[f"{session['phone']}"]
     productscollection.update_one({"product_name": product_name}, {"$set": {"notification": "off"}})
-    entries=list(productscollection.find())
-    return render_template('welcome.html', name=session['name'], entries=entries, message="Notification setting updated.")
+    
+    if category:
+        products = list(productscollection.find({"category": category}))
+        return render_template('category_products.html', category=category, products=products, message="Notification setting updated.")
+    else:
+        return categories_page()
 
 
 # ============================================================================
