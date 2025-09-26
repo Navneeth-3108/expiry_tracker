@@ -239,7 +239,7 @@ def medicine():
         return render_template('index.html', error="Session Expired. Please login again.", perror=False)
     productcollection = dbproducts[f"{session['phone']}"]
     products = list(productcollection.find({"category": "Medicine"}))
-    return render_template('category_products.html', name=session['name'], entries=products, category="Medicine")
+    return render_template('welcome.html', name=session['name'], entries=products, category="Medicine")
 
 @app.route('/food', methods=['POST'])
 def food():
@@ -247,7 +247,7 @@ def food():
         return render_template('index.html', error="Session Expired. Please login again.", perror=False)
     productcollection = dbproducts[f"{session['phone']}"]
     products = list(productcollection.find({"category": "Food"}))
-    return render_template('category_products.html', name=session['name'], entries=products, category="Food")
+    return render_template('welcome.html', name=session['name'], entries=products, category="Food")
 
 @app.route('/cosmetics', methods=['POST'])
 def cosmetics():
@@ -255,7 +255,7 @@ def cosmetics():
         return render_template('index.html', error="Session Expired. Please login again.", perror=False)
     productcollection = dbproducts[f"{session['phone']}"]
     products = list(productcollection.find({"category": "Cosmetics"}))
-    return render_template('category_products.html', name=session['name'], entries=products, category="Cosmetics")
+    return render_template('welcome.html', name=session['name'], entries=products, category="Cosmetics")
 
 @app.route('/others', methods=['POST'])
 def others():
@@ -263,7 +263,7 @@ def others():
         return render_template('index.html', error="Session Expired. Please login again.", perror=False)
     productcollection = dbproducts[f"{session['phone']}"]
     products = list(productcollection.find({"category": "Others"}))
-    return render_template('category_products.html', name=session['name'], entries=products, category="Others")
+    return render_template('welcome.html', name=session['name'], entries=products, category="Others")
 
 # ============================================================================
 # Disabling and Enabling Notifications
